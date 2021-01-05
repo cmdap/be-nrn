@@ -131,15 +131,19 @@ export function normalize(nrn: NrnInput): string {
 }
 
 export function isValidNrn(rawNrn: string): boolean {
-  const nrn = normalize(rawNrn);
-  if (nrn.length !== 11) {
+  try {
+    const nrn = normalize(rawNrn);
+    if (nrn.length !== 11) {
+      return false;
+    }
+    const calcNum = 97;
+    const numPre = Number(nrn.substr(0, 9));
+    const numPost = Number(`2${nrn.substr(0, 9)}`);
+    const check = Number(nrn.substr(9, 11));
+    return ((calcNum - (numPre % calcNum) === check) || (calcNum - (numPost % calcNum) === check));
+  } catch (err) {
     return false;
   }
-  const calcNum = 97;
-  const numPre = Number(nrn.substr(0, 9));
-  const numPost = Number(`2${nrn.substr(0, 9)}`);
-  const check = Number(nrn.substr(9, 11));
-  return ((calcNum - (numPre % calcNum) === check) || (calcNum - (numPost % calcNum) === check));
 }
 
 export function formatNrn(nrn?: string): string {
