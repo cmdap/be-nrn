@@ -55,10 +55,7 @@ export function getBirthDate(nrn: NrnInput): Date {
   const year = getBirthYear(parsedNrn); // Eg. '86' from '860814'
   const month = getBirthMonth(parsedNrn.birthDate); // Eg. 8 from '860814'
   const day = getBirthDay(parsedNrn.birthDate); // Eg. 14 from '860814'
-  if (month === 0 || day === 0) {
-    throw new Error('Birth date is unknown');
-  }
-  return parseDate(`${year}-${month}-${day}`);
+  return parseDate(`${year}-${month || 6}-${day || 1}`);
 }
 
 export function getBirthYear(nrn: NrnInput): number {
@@ -131,6 +128,37 @@ export function normalize(nrn: NrnInput): string {
     return `${nrn.birthDate.join('')}${nrn.serial}${nrn.checksum}`;
   }
   throw new Error('Could not normalize nrn of invalid type');
+}
+
+export function isValidNrn(rawNrn: string): boolean {
+  const nrn = normalize(rawNrn);
+  if (nrn.length !== 11) {
+    return false;
+  }
+  const calcNum = 97;
+  const numPre = Number(nrn.substr(0, 9));
+  const numPost = Number(`2${nrn.substr(0, 9)}`);
+  const check = Number(nrn.substr(9, 11));
+  return ((calcNum - (numPre % calcNum) === check) || (calcNum - (numPost % calcNum) === check));
+}
+
+export function formatNrn(nrn?: string): string {
+  if (nrn) {
+    const trimmedNrn = nrn.replace(/\s/g, '');
+    if (trimmedNrn.length === 13) {
+      const prefix = trimmedNrn.slice(0, 2);
+      if (prefix === '19' || prefix === '20') {
+        const shortNrn = formatNrn(trimmedNrn.slice(2));
+        if (shortNrn) {
+          return `${prefix}${shortNrn}`;
+        }
+      }
+    }
+    if (trimmedNrn.length === 11 && isValidNrn(trimmedNrn)) {
+      return trimmedNrn.replace(/^(.{6})(.{3})(.{2})$/, '$1 $2 $3');
+    }
+  }
+  return '';
 }
 
 export function parse(nrn: NrnInput): Nrn {

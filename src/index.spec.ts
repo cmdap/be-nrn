@@ -50,13 +50,8 @@ describe('getBirthDate()', () => {
     );
   });
 
-  it('should throw an error if the birth date is unknown', () => {
-    try {
-      nrnUtils.getBirthDate('810000 896 29');
-    } catch (err) {
-      expect(err.message).toBe('Birth date is unknown');
-    }
-    expect.assertions(1);
+  it('should set the date to first of june if month and day are not known', () => {
+    expect(nrnUtils.getBirthDate('810000 896 29')).toEqual(parseDate('1981-06-01'));
   });
 
   it('should always parse in Belgian timezone', () => {
@@ -153,7 +148,7 @@ describe('normalize()', () => {
 });
 
 describe('parse()', () => {
-  // Implicitely tested through other utils.
+  // Implicitly tested through other utils.
   // Only testing exceptional code paths.
 
   it('should throw if invalid format', () => {
@@ -229,5 +224,34 @@ describe('isNrnNumber()', () => {
 
   it('should return false if the input is not a NRN number', () => {
     expect(nrnUtils.isNrnNumber('814212 896 60')).toBe(false);
+  });
+});
+
+describe('isValidNrn', () => {
+  it('should return true if the given NRN is valid', () => {
+    expect(nrnUtils.isValidNrn('810212 896 71')).toBe(true);
+  });
+
+  it('should return false if the given NRN is not valid', () => {
+    expect(nrnUtils.isValidNrn('860814 001 05')).toBe(false);
+  });
+});
+
+describe('formatNrn', () => {
+  it('should format a long national number', () => {
+    expect(nrnUtils.formatNrn('1983071524530')).toBe('19830715 245 30');
+  });
+
+  it('should format a normal national number', () => {
+    expect(nrnUtils.formatNrn('83071524530')).toBe('830715 245 30');
+  });
+
+  it('should return an empty string if no RNR is provided', () => {
+    expect(nrnUtils.formatNrn()).toBe('');
+  });
+
+  it('should return en empty string if the length of the RNR is not 13 or 11', () => {
+    expect(nrnUtils.formatNrn('19830715245301')).toBe('');
+    expect(nrnUtils.formatNrn('3071524530')).toBe('');
   });
 });
